@@ -63,7 +63,9 @@ std::string huffdecode(const std::string& encodedmessage, const hufftreeptr& huf
 
 // YOUR CODE HERE FOR ADDIIONAL FUNCTIONS DECLARATION (NOT THE IMPLEMENTATION), IF ANY
 
+hufftreeptr merge_tree(const hufftreeptr& t1, const hufftreeptr& t2);
 
+void build_hufftable(std::map<char, std::string>& hufftable, hufftreeptr root, std::string& path);
 
 
 ///////////////////
@@ -87,15 +89,28 @@ int main() {
 	encodedmessage = huffencode(message, freqtable, hufftree, hufftable);
         
         //printing frequency table
-        std::map<char, int>::iterator it;
+        std::map<char, int>::iterator freqit;
         
         std::cout << "\nfrequencytable:" << std::endl;
         
-        for(it = freqtable.begin(); it != freqtable.end(); it++) {
+        for(freqit = freqtable.begin(); freqit != freqtable.end(); freqit++) {
             
-            std::cout << "(" << it->first << ", " << it->second << ")" << std::endl;
+            std::cout << "(" << freqit->first << ", " << freqit->second << ")" << std::endl;
         }
+        
+        std::map<char, std::string>::iterator huffit;
     
+        std::cout << "\nhufftable: " << std::endl;
+        
+        for(huffit = hufftable.begin(); huffit !=hufftable.end(); huffit++) {
+            
+            std::cout << "(" << huffit->first << ", " << huffit->second << ")" << std::endl;
+        }
+        
+        std::cout << "\nencoded message is: " << std::endl;
+        std::cout << encodedmessage << std::endl;
+        std::cout << "size of encoded message is: " << std::endl;
+        std::cout << encodedmessage.size() << std::endl;
         
 	// freqtable should be as in Table 1.
 	// hufftree might be as in Figure 2 (remember, the Huffman coding tree IS NOT UNIQUE. If we swap two siblings in a Huffman tree, it is still a Huffman tree of the same message.)
@@ -135,6 +150,7 @@ std::string huffencode(const std::string& message, std::map<char, int>& freqtabl
     std::string bitstring;
     std::pair<std::map<char, int>::iterator, bool> ptr;
     
+    //builds the frequency table
     for(int i = 0; i < message.size(); i++) {
         
         ptr = freqtable.insert(std::pair<char, int>(message[i], 1));
@@ -148,6 +164,7 @@ std::string huffencode(const std::string& message, std::map<char, int>& freqtabl
     std::map<char, int>::iterator it;
     std::vector<hufftreeptr> forest;
     
+    //builds a forest 
     for(it = freqtable.begin(); it != freqtable.end(); it++) {
         
         hufftreeptr tree = new hufftreenode;
@@ -160,11 +177,84 @@ std::string huffencode(const std::string& message, std::map<char, int>& freqtabl
         forest.push_back(tree);
     }
     
+    //builds the huffman tree
+    while(forest.size() > 1) {
+        
+        hufftreeptr tmp1 = forest[0];
+        int index = 0;
+        
+        for(int i = 1; i < forest.size(); i++) {
+            
+            if(forest[i]->frequency < tmp1->frequency) {
+                index = i;
+                tmp1 = forest[i];
+            }
+        }
+        
+        forest.erase(forest.begin()+index);
+        
+        hufftreeptr tmp2 = forest[0];
+        index = 0;
+
+        for(int i = 1; i < forest.size(); i++) {
+            
+            if(forest[i]->frequency < tmp2->frequency) {
+                index = i;
+                tmp2 = forest[i];
+            }
+        }
+        
+        forest.erase(forest.begin()+index);
+        
+        hufftreeptr merged = merge_tree(tmp1, tmp2);
+
+        forest.push_back(merged);
+    }
     
+    std::string path;
     
+    //build hufftable
+    build_hufftable(hufftable, forest[0], path);
     
+    std::map<char, std::string>::iterator searchit;
+    //obtain bitstring
+    for(int i = 0; i < message.size(); i++) {
+        
+        searchit = hufftable.find(message[i]);
+        bitstring.append(searchit->second);
+    }
     
     return bitstring;
-    
-    
 }
+
+hufftreeptr merge_tree(const hufftreeptr& t1, const hufftreeptr& t2) {
+    
+    hufftreeptr node = new hufftreenode;
+    
+    node->frequency = t1->frequency + t2->frequency;
+    node->left = t1;
+    node->right = t2;
+    
+    return node;
+}
+
+void build_hufftable(std::map<char, std::string>& hufftable, hufftreeptr root, std::string& path) {
+    
+    int length = path.length();
+    
+    if(root->left == NULL && root->right == NULL) {
+        
+        hufftable[root->character] = path;
+        return;
+    }
+    
+    path.push_back('0');
+    build_hufftable(hufftable, root->left, path);
+    path.erase(path.begin()+length, path.end());
+    
+    path.push_back('1');
+    build_hufftable(hufftable, root->right, path);
+    path.erase(path.begin()+length, path.end());
+}
+    
+    
