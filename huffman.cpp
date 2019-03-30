@@ -112,6 +112,14 @@ int main() {
         std::cout << "size of encoded message is: " << std::endl;
         std::cout << encodedmessage.size() << std::endl;
         
+        double ratio;
+        double before = message.size();
+        double after = encodedmessage.size();
+        
+        ratio = (after / (8*before))*100;
+        
+        std::cout << "\ncompression ratio is: " << ratio << "%" << std::endl;
+        
 	// freqtable should be as in Table 1.
 	// hufftree might be as in Figure 2 (remember, the Huffman coding tree IS NOT UNIQUE. If we swap two siblings in a Huffman tree, it is still a Huffman tree of the same message.)
 	// hufftable should correspond to hufftree, and might be as in Table 2 <' ',"100">, <'g',"00">, <'o',"01">, <'p',"1110">, <'h',"1101">, <'e',"101">, <'r',"1111">, <'s',"1100">.
@@ -122,18 +130,22 @@ int main() {
 	}
 	else {
 		std::cout << "not valid Huffman tree." << std::endl;
-	}
+	}*/
 
 	// 2) decoding (uncompression)
 	decodedmessage = huffdecode(encodedmessage, hufftree);
 	// should be "go go gophers"
+        
+        std::cout << "decoded message is: " << std::endl;
+        
+        std::cout << decodedmessage << std::endl;
 
 	if(decodedmessage == message) {
 		std::cout << "decoding OK." << std::endl;
 	}
 	else {
 		std::cout << "decoding not OK." << std::endl;
-	}*/
+	}
 
 	return 0;
 }
@@ -211,6 +223,7 @@ std::string huffencode(const std::string& message, std::map<char, int>& freqtabl
         forest.push_back(merged);
     }
     
+    hufftree = forest[0]; //point to the root of hufftree
     std::string path;
     
     //build hufftable
@@ -255,6 +268,42 @@ void build_hufftable(std::map<char, std::string>& hufftable, hufftreeptr root, s
     path.push_back('1');
     build_hufftable(hufftable, root->right, path);
     path.erase(path.begin()+length, path.end());
+}
+
+std::string huffdecode(const std::string& encodedmessage, const hufftreeptr& hufftree) {
+    
+    hufftreeptr tmp = hufftree;
+    std::string decodedmessage;
+
+    for(int i = 0; i < encodedmessage.size(); i++) {
+     
+        if(encodedmessage[i] == '0') {
+            
+            tmp = tmp->left;
+            
+            if(tmp->left == NULL && tmp->right == NULL) {
+                decodedmessage.push_back(tmp->character);
+                tmp = hufftree;
+            }
+        }
+        
+        else {
+            
+            tmp = tmp->right;
+
+            if(tmp->left == NULL && tmp->right == NULL) {
+                decodedmessage.push_back(tmp->character);
+                tmp = hufftree;
+            }
+        }
+    }
+
+    return decodedmessage;
+}
+
+bool valid_hufftree(const hufftreeptr hufftree) {
+    
+    
 }
     
     
