@@ -1,8 +1,8 @@
 /*
-	First name	XXX
-	Last name		XXX
-	Student ID	XXXXXX (e.g. 01234567)
-	Username		XXX (e.g. aaa123)
+	First name	Tuck 
+	Last name	Hong
+	Student ID	01336059
+	Username	tkh2017
 */
 
 //IMPORTANT: before submitting your source code, please make sure to comment your main function (needed for automated testing)
@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <vector> //or #include <list>
+#include <utility>
 
 // do not use using namespace std
 
@@ -84,12 +85,24 @@ int main() {
 
 	// 1) encoding (compression)
 	encodedmessage = huffencode(message, freqtable, hufftree, hufftable);
+        
+        //printing frequency table
+        std::map<char, int>::iterator it;
+        
+        std::cout << "\nfrequencytable:" << std::endl;
+        
+        for(it = freqtable.begin(); it != freqtable.end(); it++) {
+            
+            std::cout << "(" << it->first << ", " << it->second << ")" << std::endl;
+        }
+    
+        
 	// freqtable should be as in Table 1.
 	// hufftree might be as in Figure 2 (remember, the Huffman coding tree IS NOT UNIQUE. If we swap two siblings in a Huffman tree, it is still a Huffman tree of the same message.)
 	// hufftable should correspond to hufftree, and might be as in Table 2 <' ',"100">, <'g',"00">, <'o',"01">, <'p',"1110">, <'h',"1101">, <'e',"101">, <'r',"1111">, <'s',"1100">.
 	// encodedmessage might then be the 37-bits string "0001100000110000011110110110111111100" (i.e. "00.01.100.00.01.100.00.01.1110.1101.101.1111.1100")
 
-	if(valid_hufftree(hufftree))  {
+	/*if(valid_hufftree(hufftree))  {
 		std::cout << "valid Huffman tree." << std::endl;
 	}
 	else {
@@ -105,7 +118,7 @@ int main() {
 	}
 	else {
 		std::cout << "decoding not OK." << std::endl;
-	}
+	}*/
 
 	return 0;
 }
@@ -116,3 +129,42 @@ int main() {
 /////////////////////////////////////////////
 
 // YOUR CODE HERE FOR THE FUNCTIONS IMPLEMENTATIONS
+
+std::string huffencode(const std::string& message, std::map<char, int>& freqtable, hufftreeptr& hufftree, std::map<char, std::string>& hufftable) {
+    
+    std::string bitstring;
+    std::pair<std::map<char, int>::iterator, bool> ptr;
+    
+    for(int i = 0; i < message.size(); i++) {
+        
+        ptr = freqtable.insert(std::pair<char, int>(message[i], 1));
+        
+        if(!ptr.second) {
+            
+            (ptr.first)->second = (ptr.first)->second + 1;
+        }
+    }
+    
+    std::map<char, int>::iterator it;
+    std::vector<hufftreeptr> forest;
+    
+    for(it = freqtable.begin(); it != freqtable.end(); it++) {
+        
+        hufftreeptr tree = new hufftreenode;
+        
+        tree->character = it->first;
+        tree->frequency = it->second;
+        tree->left = NULL;
+        tree->right = NULL;
+        
+        forest.push_back(tree);
+    }
+    
+    
+    
+    
+    
+    return bitstring;
+    
+    
+}
