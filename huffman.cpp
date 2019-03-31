@@ -83,7 +83,7 @@ int main() {
 	std::map<char, int> freqtable;
 	std::map<char, std::string> hufftable;
 
-	message = "go go gophers";
+	message = "hello";
 
 	// 1) encoding (compression)
 	encodedmessage = huffencode(message, freqtable, hufftree, hufftable);
@@ -125,12 +125,12 @@ int main() {
 	// hufftable should correspond to hufftree, and might be as in Table 2 <' ',"100">, <'g',"00">, <'o',"01">, <'p',"1110">, <'h',"1101">, <'e',"101">, <'r',"1111">, <'s',"1100">.
 	// encodedmessage might then be the 37-bits string "0001100000110000011110110110111111100" (i.e. "00.01.100.00.01.100.00.01.1110.1101.101.1111.1100")
 
-	/*if(valid_hufftree(hufftree))  {
+	if(valid_hufftree(hufftree)) {
 		std::cout << "valid Huffman tree." << std::endl;
 	}
 	else {
 		std::cout << "not valid Huffman tree." << std::endl;
-	}*/
+	}
 
 	// 2) decoding (uncompression)
 	decodedmessage = huffdecode(encodedmessage, hufftree);
@@ -244,6 +244,7 @@ hufftreeptr merge_tree(const hufftreeptr& t1, const hufftreeptr& t2) {
     
     hufftreeptr node = new hufftreenode;
     
+    node->character = '\0';
     node->frequency = t1->frequency + t2->frequency;
     node->left = t1;
     node->right = t2;
@@ -303,7 +304,40 @@ std::string huffdecode(const std::string& encodedmessage, const hufftreeptr& huf
 
 bool valid_hufftree(const hufftreeptr hufftree) {
     
+    bool isvalid = true;
+    hufftreeptr tmp = hufftree;
     
+    if(hufftree != NULL) {
+    
+        //check if leaves have characters
+        if(hufftree->left == NULL && hufftree->right == NULL){
+            if(hufftree->character == '\0') {
+                isvalid = false;
+                return isvalid;
+            }
+        }
+
+        //check if non-leaf nodes are valid
+        else {
+            if(hufftree->left == NULL || hufftree->right == NULL) {
+                isvalid = false; 
+                return isvalid;
+            }
+            
+            if(hufftree->left->frequency + hufftree->right->frequency != hufftree->frequency) {
+                isvalid = false;
+                return isvalid;
+            }
+        }
+
+        isvalid = valid_hufftree(hufftree->left);
+        
+        if(isvalid == true) {
+            isvalid = valid_hufftree(hufftree->right);
+        }
+    }
+    
+    return isvalid;
 }
     
     
